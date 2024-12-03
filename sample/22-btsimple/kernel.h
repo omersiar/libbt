@@ -31,7 +31,7 @@
 #include <circle/logger.h>
 #include <circle/usb/dwhcidevice.h>
 #include <circle/sched/scheduler.h>
-#include <circle/bt/btsubsystem.h>
+#include <bt/btsubsystem.h>
 #include <circle/types.h>
 
 enum TShutdownMode

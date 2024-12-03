@@ -2,12 +2,12 @@
 # Rules.mk
 #
 
-LIBCAMERAHOME ?= ../..
+LIBBTHOME ?= ../..
 
--include $(LIBCAMERAHOME)/Config.mk
+-include $(LIBBTHOME)/Config.mk
 
-CIRCLEHOME ?= $(LIBCAMERAHOME)/circle
+CIRCLEHOME ?= $(LIBBTHOME)/circle
 
-INCLUDE += -I $(LIBCAMERAHOME)/include
+INCLUDE += -I $(LIBBTHOME)/include
 
 include $(CIRCLEHOME)/Rules.mk

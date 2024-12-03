@@ -21,7 +21,7 @@
 #define _circle_bt_bttask_h
 
 #include <circle/sched/task.h>
-#include <circle/bt/btsubsystem.h>
+#include <bt/btsubsystem.h>
 
 class CBTTask : public CTask
 {

@@ -21,11 +21,11 @@
 #define _circle_bt_btsubsystem_h
 
 #include <circle/interrupt.h>
-#include <circle/bt/bluetooth.h>
-#include <circle/bt/btinquiryresults.h>
-#include <circle/bt/btuarttransport.h>
-#include <circle/bt/bthcilayer.h>
-#include <circle/bt/btlogicallayer.h>
+#include <bt/bluetooth.h>
+#include <bt/btinquiryresults.h>
+#include <bt/btuarttransport.h>
+#include <bt/bthcilayer.h>
+#include <bt/btlogicallayer.h>
 #include <circle/types.h>
 
 class CBTSubSystem

@@ -20,7 +20,7 @@
 #ifndef _circle_bt_btinquiryresults_h
 #define _circle_bt_btinquiryresults_h
 
-#include <circle/bt/bluetooth.h>
+#include <bt/bluetooth.h>
 #include <circle/ptrarray.h>
 #include <circle/types.h>
 

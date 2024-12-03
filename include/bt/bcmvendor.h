@@ -4,7 +4,7 @@
 #ifndef _circle_bt_bcmvendor_h
 #define _circle_bt_bcmvendor_h
 
-#include <circle/bt/bluetooth.h>
+#include <bt/bluetooth.h>
 
 // Vendor specific commands
 #define OP_CODE_DOWNLOAD_MINIDRIVER	(OGF_VENDOR_COMMANDS | 0x02E)

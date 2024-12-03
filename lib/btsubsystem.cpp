@@ -17,8 +17,8 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 //
-#include <circle/bt/btsubsystem.h>
-#include <circle/bt/bttask.h>
+#include <bt/btsubsystem.h>
+#include <bt/bttask.h>
 #include <circle/sched/scheduler.h>
 #include <circle/devicenameservice.h>
 #include <circle/machineinfo.h>

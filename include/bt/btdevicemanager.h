@@ -20,8 +20,8 @@
 #ifndef _circle_bt_btdevicemanager_h
 #define _circle_bt_btdevicemanager_h
 
-#include <circle/bt/bluetooth.h>
-#include <circle/bt/btqueue.h>
+#include <bt/bluetooth.h>
+#include <bt/btqueue.h>
 #include <circle/types.h>
 
 enum TBTDeviceState

@@ -20,12 +20,12 @@
 #ifndef _circle_bt_bthcilayer_h
 #define _circle_bt_bthcilayer_h
 
-#include <circle/bt/bttransportlayer.h>
+#include <bt/bttransportlayer.h>
 #include <circle/usb/usbbluetooth.h>
-#include <circle/bt/btuarttransport.h>
-#include <circle/bt/bluetooth.h>
-#include <circle/bt/btdevicemanager.h>
-#include <circle/bt/btqueue.h>
+#include <bt/btuarttransport.h>
+#include <bt/bluetooth.h>
+#include <bt/btdevicemanager.h>
+#include <bt/btqueue.h>
 #include <circle/types.h>
 
 class CBTHCILayer

@@ -17,9 +17,9 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 //
-#include <circle/bt/btdevicemanager.h>
-#include <circle/bt/bthcilayer.h>
-#include <circle/bt/bcmvendor.h>
+#include <bt/btdevicemanager.h>
+#include <bt/bthcilayer.h>
+#include <bt/bcmvendor.h>
 #include <circle/sched/scheduler.h>
 #include <circle/logger.h>
 #include <circle/util.h>

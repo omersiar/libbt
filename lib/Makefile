@@ -18,7 +18,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
-CIRCLEHOME = ../..
+LIBBTHOME = ..
 
 OBJS	= btsubsystem.o bttask.o \
 	  btlogicallayer.o btinquiryresults.o \
@@ -31,7 +31,7 @@ libbluetooth.a: $(OBJS)
 
 EXTRACLEAN = BCM43430A1.h converttool
 
-include $(CIRCLEHOME)/Rules.mk
+include $(LIBBTHOME)/Rules.mk
 
 %.h: %.hcd
 	./converttool -b $< > $@

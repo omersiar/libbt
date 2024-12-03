@@ -17,7 +17,7 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 //
-#include <circle/bt/btuarttransport.h>
+#include <bt/btuarttransport.h>
 #include <circle/devicenameservice.h>
 #include <circle/bcm2835.h>
 #include <circle/memio.h>

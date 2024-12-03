@@ -17,7 +17,7 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 //
-#include <circle/bt/bttask.h>
+#include <bt/bttask.h>
 #include <circle/sched/scheduler.h>
 #include <assert.h>
 

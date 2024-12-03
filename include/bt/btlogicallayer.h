@@ -20,8 +20,8 @@
 #ifndef _circle_bt_btlogicallayer_h
 #define _circle_bt_btlogicallayer_h
 
-#include <circle/bt/bthcilayer.h>
-#include <circle/bt/btinquiryresults.h>
+#include <bt/bthcilayer.h>
+#include <bt/btinquiryresults.h>
 #include <circle/sched/synchronizationevent.h>
 #include <circle/types.h>
 

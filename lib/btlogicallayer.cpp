@@ -17,8 +17,8 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 //
-#include <circle/bt/btlogicallayer.h>
-#include <circle/bt/bluetooth.h>
+#include <bt/btlogicallayer.h>
+#include <bt/bluetooth.h>
 #include <circle/util.h>
 #include <assert.h>
 

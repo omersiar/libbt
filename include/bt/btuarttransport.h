@@ -21,8 +21,8 @@
 #define _circle_bt_btuarttransport_h
 
 #include <circle/device.h>
-#include <circle/bt/bttransportlayer.h>
-#include <circle/bt/bluetooth.h>
+#include <bt/bttransportlayer.h>
+#include <bt/bluetooth.h>
 #include <circle/interrupt.h>
 #include <circle/gpiopin.h>
 #include <circle/types.h>
