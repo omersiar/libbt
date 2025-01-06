@@ -83,7 +83,8 @@ void CBTDeviceManager::Process (void)
 	{
 		assert (nLength >= sizeof (TBTHCIEventHeader));
 		TBTHCIEventHeader *pHeader = (TBTHCIEventHeader *) m_pBuffer;
-
+		CLogger::Get ()->Write (FromDeviceManager, LogNotice,
+							"Event Header %d)", pHeader);
 		switch (pHeader->EventCode)
 		{
 		case EVENT_CODE_COMMAND_COMPLETE: {
@@ -91,6 +92,8 @@ void CBTDeviceManager::Process (void)
 			TBTHCIEventCommandComplete *pCommandComplete = (TBTHCIEventCommandComplete *) pHeader;
 
 			m_pHCILayer->SetCommandPackets (pCommandComplete->NumHCICommandPackets);
+			CLogger::Get ()->Write (FromDeviceManager, LogNotice,
+							"Set Command Packets");
 
 			if (pCommandComplete->Status != BT_STATUS_SUCCESS)
 			{
@@ -119,7 +122,8 @@ void CBTDeviceManager::Process (void)
 				Cmd.ParameterTotalLength = PARM_TOTAL_LEN (Cmd);
 				m_pHCILayer->SendCommand (&Cmd, sizeof Cmd);
 				CScheduler::Get ()->MsSleep (50);
-
+				CLogger::Get ()->Write (FromDeviceManager, LogNotice,
+							"MINIDRIVER COMMAND SENT TO HCI LAYER)");
 				m_nFirmwareOffset = 0;
 				m_State = BTDeviceStateWriteRAMPending;
 				} break;
@@ -221,6 +225,8 @@ void CBTDeviceManager::Process (void)
 				break;
 
 			default:
+				CLogger::Get ()->Write (FromDeviceManager, LogNotice,
+							"DEVICE MANAGER DEFAULT CASE)");
 				break;
 			}
 			} break;
@@ -233,6 +239,10 @@ void CBTDeviceManager::Process (void)
 			} break;
 
 		default:
+			CLogger::Get ()->Write (FromDeviceManager, LogNotice,
+							"NOTHING NEW AT DEVICE MANAGER");
+			CLogger::Get ()->Write (FromDeviceManager, LogNotice,
+							"case %d",pCommandComplete->CommandOpCode);
 			assert (0);
 			break;
 		}

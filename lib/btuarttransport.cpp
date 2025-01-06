@@ -227,6 +227,7 @@ void CBTUARTTransport::IRQHandler (void)
 		case RxStateStart:
 			if (nData == HCI_PACKET_EVENT)
 			{
+				CLogger::Get ()->Write (FromBTUART, LogNotice, "IT IS HCI PACKET EVENT");
 				m_nRxInPtr = 0;
 				m_nRxState = RxStateCommand;
 			}
@@ -247,7 +248,8 @@ void CBTUARTTransport::IRQHandler (void)
 			else
 			{
 				if (m_pEventHandler != 0)
-				{
+				{	
+					CLogger::Get ()->Write (FromBTUART, LogNotice, "Writing to EventHandler buffer");
 					(*m_pEventHandler) (m_RxBuffer, m_nRxInPtr);
 				}
 
@@ -257,11 +259,13 @@ void CBTUARTTransport::IRQHandler (void)
 
 		case RxStateParam:
 			assert (m_nRxInPtr < BT_MAX_HCI_EVENT_SIZE);
+			CLogger::Get ()->Write (FromBTUART, LogNotice, "HCI STATE PARAM");
 			m_RxBuffer[m_nRxInPtr++] = nData;
 			if (--m_nRxParamLength == 0)
 			{
 				if (m_pEventHandler != 0)
 				{
+					CLogger::Get ()->Write (FromBTUART, LogNotice, "STATE Writing to EventHandler buffer");
 					(*m_pEventHandler) (m_RxBuffer, m_nRxInPtr);
 				}
 
