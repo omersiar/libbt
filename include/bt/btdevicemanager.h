@@ -24,6 +24,12 @@
 #include <bt/btqueue.h>
 #include <circle/types.h>
 
+extern "C" {
+    extern const unsigned char _binary_BCM4345C0_hcd_start[];
+    extern const unsigned char _binary_BCM4345C0_hcd_end[];
+    extern const unsigned int _binary_BCM4345C0_hcd_size;
+}
+
 enum TBTDeviceState
 {
 	BTDeviceStateResetPending,
@@ -65,7 +71,7 @@ private:
 
 	u8 *m_pBuffer;
 
-	unsigned m_nFirmwareOffset;
+	u32	     m_nFirmwareOffset;
 };
 
 #endif

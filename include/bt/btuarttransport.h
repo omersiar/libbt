@@ -48,6 +48,9 @@ private:
 private:
 	CGPIOPin m_GPIO14;
 	CGPIOPin m_GPIO15;
+	CGPIOPin m_UK1Pib;
+	CGPIOPin m_UK2Pib;
+	CGPIOPin m_UK3Pib;
 	CGPIOPin m_TxDPin;
 	CGPIOPin m_RxDPin;
 

@@ -22,7 +22,10 @@
 #include <circle/sched/scheduler.h>
 #include <circle/devicenameservice.h>
 #include <circle/machineinfo.h>
+#include <circle/logger.h>
 #include <assert.h>
+
+LOGMODULE ("BTSUB");
 
 CBTSubSystem::CBTSubSystem (CInterruptSystem *pInterruptSystem, u32 nClassOfDevice, const char *pLocalName)
 :	m_pInterruptSystem (pInterruptSystem),
@@ -41,39 +44,49 @@ CBTSubSystem::~CBTSubSystem (void)
 boolean CBTSubSystem::Initialize (void)
 {
 	// if USB transport not available, UART still free and this is a RPi 3: use UART transport
+	LOGNOTE ("Initializing the Bluetooth subsystem");
 	if (   CDeviceNameService::Get ()->GetDevice ("ubt1", FALSE) == 0
 	    && CDeviceNameService::Get ()->GetDevice ("ttyS1", FALSE) == 0
 	    && CMachineInfo::Get ()->GetModelMajor () == 3)
 	{
+		LOGNOTE ("Initializing UART Transport");
 		assert (m_pUARTTransport == 0);
 		assert (m_pInterruptSystem != 0);
 		m_pUARTTransport = new CBTUARTTransport (m_pInterruptSystem);
 		assert (m_pUARTTransport != 0);
 
 		if (!m_pUARTTransport->Initialize ())
-		{
+		{	
+			LOGERR ("UART Transport could not be initialized");
 			return FALSE;
 		}
 	}
 
 	if (!m_HCILayer.Initialize ())
 	{
+		LOGERR ("HCI Layer could not be initialized");
 		return FALSE;
 	}
 
 	if (!m_LogicalLayer.Initialize ())
 	{
+		LOGERR ("Logic Layer could not be initialized");
 		return FALSE;
 	}
 
+	LOGNOTE ("BT Task is now going to be created");
 	new CBTTask (this);
+	LOGNOTE ("BT Task is created, waiting device to be running");
 
 	while (!m_HCILayer.GetDeviceManager ()->DeviceIsRunning ())
 	{
 		CScheduler::Get ()->Yield ();
+		//LOGNOTE ("Device State %d", m_HCILayer.GetDeviceManager ()->GetState ());
+		//CTimer::SimpleMsDelay (2000);
 	}
-
+	LOGNOTE ("BT device is now running");
 	return TRUE;
+	
 }
 
 void CBTSubSystem::Process (void)
