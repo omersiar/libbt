@@ -40,6 +40,7 @@ enum TBTDeviceState
 	BTDeviceStateResetPending,
 	BTDeviceStateWriteRAMPending,
 	BTDeviceStateLaunchRAMPending,
+	BTDeviceStateSetBaudRatePending,
 	BTDeviceStateReadBDAddrPending,
 	BTDeviceStateWriteClassOfDevicePending,
 	BTDeviceStateWriteLocalNamePending,

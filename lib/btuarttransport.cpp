@@ -103,9 +103,8 @@ CBTUARTTransport::CBTUARTTransport(CInterruptSystem *pInterruptSystem)
 	: // to be sure there is no collision with the UART GPIO interface
 	  m_GPIO14(14, GPIOModeInput),
 	  m_GPIO15(15, GPIOModeInput),
-	  m_UK1Pib(30, GPIOModeAlternateFunction3),
-	  m_UK2Pib(31, GPIOModeAlternateFunction3),
-	  m_UK3Pib(43, GPIOModeAlternateFunction3),
+	  m_CTSPin(30, GPIOModeAlternateFunction3),
+	  m_RTSPin(31, GPIOModeAlternateFunction3),
 	  m_TxDPin(32, GPIOModeAlternateFunction3),
 	  m_RxDPin(33, GPIOModeAlternateFunction3),
 	  m_pInterruptSystem(pInterruptSystem),
@@ -113,6 +112,9 @@ CBTUARTTransport::CBTUARTTransport(CInterruptSystem *pInterruptSystem)
 	  m_pEventHandler(0),
 	  m_nRxState(RxStateStart)
 {
+	//SEB does not work... extern void logging_switch_off_uart(); logging_switch_off_uart();
+	m_RxBufferLength = BT_MAX_HCI_EVENT_SIZE;
+	m_RxBuffer = (u8*) malloc(m_RxBufferLength); //SEB
 }
 
 CBTUARTTransport::~CBTUARTTransport(void)
@@ -135,34 +137,10 @@ CBTUARTTransport::~CBTUARTTransport(void)
 
 boolean CBTUARTTransport::Initialize(unsigned nBaudrate)
 {
-	unsigned nClockRate = CMachineInfo::Get()->GetClockRate(CLOCK_ID_UART);
-	assert(nClockRate > 0);
+	if (!SetBaudRate(nBaudrate))
+	{
 
-	assert(300 <= nBaudrate && nBaudrate <= 3000000);
-	unsigned nBaud16 = nBaudrate * 16;
-	unsigned nIntDiv = nClockRate / nBaud16;
-	assert(1 <= nIntDiv && nIntDiv <= 0xFFFF);
-	unsigned nFractDiv2 = (nClockRate % nBaud16) * 8 / nBaudrate;
-	unsigned nFractDiv = nFractDiv2 / 2 + nFractDiv2 % 2;
-	assert(nFractDiv <= 0x3F);
-
-	PeripheralEntry();
-
-	// FIX-ME multiple device support for different UART interfaces
-	// Add baud-rate command for BT Chip as well
-	/* initialize UART */
-
-	write32(ARM_UART0_IMSC, 0x00);
-	write32(ARM_UART0_ICR, 0x7ff);
-	write32(ARM_UART0_IBRD, nIntDiv);
-	write32(ARM_UART0_FBRD, nFractDiv);
-	write32(ARM_UART0_IFLS, 0x08);
-	write32(ARM_UART0_LCRH, 0x70);
-	write32(ARM_UART0_CR, 0xB01);
-	write32(ARM_UART0_IMSC, INT_RX | INT_RT | INT_OE);
-
-	PeripheralExit();
-
+	}
 	assert(m_pInterruptSystem != 0);
 	m_pInterruptSystem->ConnectIRQ(ARM_IRQ_UART, IRQStub, this);
 	m_bIRQConnected = TRUE;
@@ -184,6 +162,24 @@ boolean CBTUARTTransport::SendHCICommand(const void *pBuffer, unsigned nLength)
 		Write(*pChar++);
 	}
 	PeripheralExit();
+
+	return TRUE;
+}
+
+boolean CBTUARTTransport::SendHCIAclData (const void *pBuffer, unsigned nLength, bool isHeader) { //SEB
+	PeripheralEntry ();
+
+	if (isHeader) Write (HCI_PACKET_ACL_DATA);
+
+	u8 *pChar = (u8 *) pBuffer;
+	assert (pChar != 0);
+
+	while (nLength--)
+	{
+		Write (*pChar++);
+	}
+
+	PeripheralExit ();
 
 	return TRUE;
 }
@@ -228,9 +224,17 @@ void CBTUARTTransport::IRQHandler(void)
 		case RxStateStart:
 			if (nData == HCI_PACKET_EVENT)
 			{
+				isHciCommand = true;
 				m_nRxInPtr = 0;
 				m_nRxState = RxStateCommand;
 			}
+			else if (nData == HCI_PACKET_ACL_DATA) //SEB
+			{
+				isHciCommand = false;
+				m_nRxInPtr = 0;
+				m_nRxState = RxStateCommand;
+			}
+			else CLogger::Get ()->Write (FromBTUART, LogPanic, "Got something different than HCI_PACKET_EVENT/HCI_PACKET_ACL_DATA!!!"); //SEB
 			break;
 
 		case RxStateCommand:
@@ -239,24 +243,33 @@ void CBTUARTTransport::IRQHandler(void)
 			break;
 
 		case RxStateLength:
-			m_RxBuffer[m_nRxInPtr++] = nData;
-			if (nData > 0)
-			{
-				m_nRxParamLength = nData;
-				m_nRxState = RxStateParam;
-			}
-			else
-			{
-				if (m_pEventHandler != 0)
+			if (isHciCommand) { //SEB Command format is one byte for opcode then 1 byte for data size
+				m_RxBuffer[m_nRxInPtr++] = nData;
+				if (nData > 0)
 				{
-					(*m_pEventHandler)(m_RxBuffer, m_nRxInPtr);
+					m_nRxParamLength = nData;
+					m_nRxState = RxStateParam;
 				}
-				m_nRxState = RxStateStart;
+				else
+				{
+					if (m_pEventHandler != 0)
+					{
+						(*m_pEventHandler)(m_RxBuffer, m_nRxInPtr);
+					}
+					m_nRxState = RxStateStart;
+				}
+				break;
+			else { //SEB ACL format is 2 bytes for handle+flags then 2 bytes for data size - http://affon.narod.ru/BT/bluetooth_app_c10.pdf#G12.228239
+				if (m_nRxInPtr==3) m_nRxParamLength = nData;
+				else if (m_nRxInPtr==4) {
+					m_nRxParamLength |= nData<<8;
+					m_nRxState = RxStateParam;
+				}
 			}
-			break;
-
 		case RxStateParam:
-			assert(m_nRxInPtr < BT_MAX_HCI_EVENT_SIZE);
+			if (m_RxBufferLength<=m_nRxInPtr) {
+				m_RxBufferLength*=2; m_RxBuffer=(u8*)realloc(m_RxBuffer,m_RxBufferLength);
+			} //SEB assert (m_nRxInPtr < BT_MAX_HCI_EVENT_SIZE);assert(m_nRxInPtr < BT_MAX_HCI_EVENT_SIZE);
 			m_RxBuffer[m_nRxInPtr++] = nData;
 			if (--m_nRxParamLength == 0)
 			{
@@ -283,4 +296,37 @@ void CBTUARTTransport::IRQStub(void *pParam)
 	assert(pThis != 0);
 
 	pThis->IRQHandler();
+}
+
+boolean CBTUARTTransport::SetBaudRate(unsigned nBaudrate)
+{
+	unsigned nClockRate = CMachineInfo::Get()->GetClockRate(CLOCK_ID_UART);
+	assert(nClockRate > 0);
+
+	assert(300 <= nBaudrate && nBaudrate <= 3000000);
+	unsigned nBaud16 = nBaudrate * 16;
+	unsigned nIntDiv = nClockRate / nBaud16;
+	assert(1 <= nIntDiv && nIntDiv <= 0xFFFF);
+	unsigned nFractDiv2 = (nClockRate % nBaud16) * 8 / nBaudrate;
+	unsigned nFractDiv = nFractDiv2 / 2 + nFractDiv2 % 2;
+	assert(nFractDiv <= 0x3F);
+
+	PeripheralEntry();
+
+	// FIX-ME multiple device support for different UART interfaces
+	// Add baud-rate command for BT Chip as well
+	/* initialize UART */
+	write32(ARM_UART0_CR, 0);
+	write32(ARM_UART0_IMSC, 0x00);
+	write32(ARM_UART0_ICR, 0x7ff);
+	write32(ARM_UART0_IBRD, nIntDiv);
+	write32(ARM_UART0_FBRD, nFractDiv);
+	write32(ARM_UART0_IFLS, 0x08);
+	write32(ARM_UART0_LCRH, 0x70);
+	write32(ARM_UART0_CR, CR_UART_EN_MASK | CR_TXE_MASK | CR_RXE_MASK | CR_RTS_MASK);
+	write32(ARM_UART0_IMSC, INT_RX | INT_RT | INT_OE);
+
+	PeripheralExit();
+
+	return TRUE;
 }

@@ -149,6 +149,18 @@ void CBTDeviceManager::Process(void)
 			{
 				assert(m_State == BTDeviceStateLaunchRAMPending);
 				CScheduler::Get()->MsSleep(250);
+				struct baudrate_command {
+					TBTHCICommandHeader header;
+					u16 zero;
+					u32 baud_rate;
+				} __packed baud_cmd;
+				baud_cmd.header.OpCode = OP_CODE_SET_BAUDRATE;
+				baud_cmd.header.ParameterTotalLength = PARM_TOTAL_LEN(baud_cmd);
+				baud_cmd.zero = 0;
+				baud_cmd.baud_rate = 3000000; // see page 44 of https://www.cypress.com/file/298076/download for the possible rates
+				m_pHCILayer->SendCommand (&baud_cmd,sizeof(baud_cmd)); // Chip will respond at default baud rate to this
+
+				m_State = BTDeviceStateSetBaudRatePending;
 
 			NoFirmwareLoad:
 				TBTHCICommandHeader Cmd;
@@ -158,6 +170,19 @@ void CBTDeviceManager::Process(void)
 
 				m_State = BTDeviceStateReadBDAddrPending;
 			}
+			break;
+
+			case OP_CODE_SET_BAUDRATE:
+				assert(m_State == BTDeviceStateSetBaudRatePending)
+				//FIX-ME also align host rate
+				// We should have receieved baud change response by now and safe to assume no more data would be sent
+				if (!CBTUARTTransport::SetBaudRate(3000000);)
+				{
+					 m_State = BTDeviceStateUnknown; 
+					 break;
+				}
+				m_State = BTDeviceStateReadBDAddrPending;
+
 			break;
 
 			case OP_CODE_READ_BD_ADDR:

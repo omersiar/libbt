@@ -38,6 +38,8 @@ public:
 	boolean SendHCICommand (const void *pBuffer, unsigned nLength);
 
 	void RegisterHCIEventHandler (TBTHCIEventHandler *pHandler);
+	bool isHciCommand; //SEB true if command, false if ACL data
+	bool SetBaudRate;
 
 private:
 	void Write (u8 nChar);
@@ -48,9 +50,8 @@ private:
 private:
 	CGPIOPin m_GPIO14;
 	CGPIOPin m_GPIO15;
-	CGPIOPin m_UK1Pib;
-	CGPIOPin m_UK2Pib;
-	CGPIOPin m_UK3Pib;
+	CGPIOPin m_CTSPin;
+	CGPIOPin m_RTSPin;
 	CGPIOPin m_TxDPin;
 	CGPIOPin m_RxDPin;
 
@@ -58,8 +59,8 @@ private:
 	boolean m_bIRQConnected;
 
 	TBTHCIEventHandler *m_pEventHandler;
-
-	u8 m_RxBuffer[BT_MAX_HCI_EVENT_SIZE];
+	
+	u8* m_RxBuffer; unsigned m_RxBufferLength; //SEB u8 m_RxBuffer[BT_MAX_HCI_EVENT_SIZE];
 	unsigned m_nRxState;
 	unsigned m_nRxParamLength;
 	unsigned m_nRxInPtr;
