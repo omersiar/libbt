@@ -61,7 +61,6 @@ boolean CBTHCILayer::Initialize (void)
 
 	if (m_pHCITransportUSB == 0)
 	{
-		CLogger::Get ()->Write (FromHCILayer, LogNotice, "Creating UART transport HCI layer");
 		m_pHCITransportUART = (CBTUARTTransport *) CDeviceNameService::Get ()->GetDevice ("ttyBT1", FALSE);
 		if (m_pHCITransportUART == 0)
 		{
@@ -85,10 +84,8 @@ boolean CBTHCILayer::Initialize (void)
 	{
 		assert (m_pHCITransportUART != 0);
 		m_pHCITransportUART->RegisterHCIEventHandler (EventStub);
-		CLogger::Get ()->Write (FromHCILayer, LogError, "Registered UART HCI Event handler");
 
 	}
-	CLogger::Get ()->Write (FromHCILayer, LogError, "Device Manager going to be initialized");
 	return m_DeviceManager.Initialize ();
 }
 
@@ -124,7 +121,6 @@ void CBTHCILayer::Process (void)
 
 			break;
 		}
-		//CLogger::Get ()->Write (FromHCILayer, LogError, "Sent HCI Command packet");
 		m_nCommandPackets--;
 	}
 
@@ -133,9 +129,7 @@ void CBTHCILayer::Process (void)
 
 void CBTHCILayer::SendCommand (const void *pBuffer, unsigned nLength)
 {
-	//CLogger::Get ()->Write (FromHCILayer, LogNotice, "Enqueue the command");
 	m_CommandQueue.Enqueue (pBuffer, nLength);
-	//CLogger::Get ()->Write (FromHCILayer, LogError, "HCI Command enqueued");
 }
 
 boolean CBTHCILayer::ReceiveLinkEvent (void *pBuffer, unsigned *pResultLength)
@@ -155,7 +149,6 @@ boolean CBTHCILayer::ReceiveLinkEvent (void *pBuffer, unsigned *pResultLength)
 void CBTHCILayer::SetCommandPackets (unsigned nCommandPackets)
 {
 	m_nCommandPackets = nCommandPackets;
-	//CLogger::Get ()->Write (FromHCILayer, LogError, "Set Command Packets");
 }
 
 CBTDeviceManager *CBTHCILayer::GetDeviceManager (void)
@@ -185,7 +178,6 @@ void CBTHCILayer::EventHandler (const void *pBuffer, unsigned nLength)
 
 	assert (m_pEventBuffer != 0);
 	memcpy (m_pEventBuffer + m_nEventFragmentOffset, pBuffer, nLength);
-	//CLogger::Get ()->Write (FromHCILayer, LogNotice, "mem copied for m_pEventBuffer");
 
 	m_nEventFragmentOffset += nLength;
 	if (m_nEventFragmentOffset < m_nEventLength)
@@ -197,14 +189,11 @@ void CBTHCILayer::EventHandler (const void *pBuffer, unsigned nLength)
 	switch (pHeader->EventCode)
 	{
 	case EVENT_CODE_COMMAND_COMPLETE:
-		//CLogger::Get ()->Write (FromHCILayer, LogNotice, "EventHandler COMMAND COMPLETE");
 	case EVENT_CODE_COMMAND_STATUS:
-		//CLogger::Get ()->Write (FromHCILayer, LogNotice, "EventHandler COMMAND STATUS");
 		m_DeviceEventQueue.Enqueue (m_pEventBuffer, m_nEventLength);
 		break;
 
 	default:
-		//CLogger::Get ()->Write (FromHCILayer, LogNotice, "EventHandler LinkLayer Enque");
 		m_LinkEventQueue.Enqueue (m_pEventBuffer, m_nEventLength);
 		break;
 	}

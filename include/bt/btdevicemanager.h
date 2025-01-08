@@ -24,6 +24,11 @@
 #include <bt/btqueue.h>
 #include <circle/types.h>
 
+// binary ref copied from work of
+// @babbleberry Adam Greenwood-Byrne
+// https://github.com/babbleberry/rpi4-osdev/blob/master/part7-bluetooth/bt.c
+// license CC0 1.0 Universal
+// FIX-ME Support for other boards
 extern "C" {
     extern const unsigned char _binary_BCM4345C0_hcd_start[];
     extern const unsigned char _binary_BCM4345C0_hcd_end[];

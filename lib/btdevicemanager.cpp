@@ -25,15 +25,6 @@
 #include <circle/util.h>
 #include <assert.h>
 
-/*
-static const u8 Firmware[] =
-	{
-#if RASPPI >= 2 // this takes 35 KByte and is not needed on RPi 1
-#include "BCM43430A1.h"
-#endif
-};
-*/
-
 static const char FromDeviceManager[] = "btdev";
 
 CBTDeviceManager::CBTDeviceManager(CBTHCILayer *pHCILayer, CBTQueue *pEventQueue,
@@ -89,13 +80,13 @@ void CBTDeviceManager::Process(void)
 		TBTHCIEventHeader *pHeader = (TBTHCIEventHeader *)m_pBuffer;
 		switch (pHeader->EventCode)
 		{
+		// FIX-ME include setting chip baud rate
 		case EVENT_CODE_COMMAND_COMPLETE:
 		{
 			assert(nLength >= sizeof(TBTHCIEventCommandComplete));
 			TBTHCIEventCommandComplete *pCommandComplete = (TBTHCIEventCommandComplete *)pHeader;
 
 			m_pHCILayer->SetCommandPackets(pCommandComplete->NumHCICommandPackets);
-			// CLogger::Get ()->Write (FromDeviceManager, LogNotice, "Set Command Packets");
 
 			if (pCommandComplete->Status != BT_STATUS_SUCCESS)
 			{
@@ -127,6 +118,7 @@ void CBTDeviceManager::Process(void)
 
 			case OP_CODE_DOWNLOAD_MINIDRIVER:
 			case OP_CODE_WRITE_RAM: {
+				// FIX-ME Support for other boards
 				assert (m_State == BTDeviceStateWriteRAMPending);
 				const unsigned char* Firmware = _binary_BCM4345C0_hcd_start;
     			const u32 FirmwareSize = (long)&_binary_BCM4345C0_hcd_size;
@@ -150,7 +142,6 @@ void CBTDeviceManager::Process(void)
 				if (nOpCode == OP_CODE_LAUNCH_RAM)
 				{
 					m_State = BTDeviceStateLaunchRAMPending;
-					CScheduler::Get()->MsSleep(3000);
 				}
 				} break;
 

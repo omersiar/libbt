@@ -147,30 +147,10 @@ boolean CBTUARTTransport::Initialize(unsigned nBaudrate)
 	assert(nFractDiv <= 0x3F);
 
 	PeripheralEntry();
+
+	// FIX-ME multiple device support for different UART interfaces
+	// Add baud-rate command for BT Chip as well
 	/* initialize UART */
-	// write32 (ARM_UART0_CR, 0);         // turn off UART0
-
-	/*
-	write32 (ARM_UART0_IMSC, 0);
-	write32 (ARM_UART0_ICR,  0x7FF);
-	write32 (ARM_UART0_IBRD, nIntDiv);
-	write32 (ARM_UART0_FBRD, nFractDiv);
-	write32 (ARM_UART0_IFLS, IFLS_IFSEL_1_4 << IFLS_RXIFSEL_SHIFT);
-	write32 (ARM_UART0_LCRH, LCRH_WLEN8_MASK | LCRH_FEN_MASK);		// 8N1
-	write32 (ARM_UART0_CR,   CR_UART_EN_MASK | CR_TXE_MASK | CR_RXE_MASK);
-	write32 (ARM_UART0_IMSC, INT_RX | INT_RT | INT_OE);
-	*/
-
-	/*
-	mmio_write(ARM_UART0_IMSC, 0x00);
-	mmio_write(ARM_UART0_ICR,  0x7ff);
-	write32 (ARM_UART0_IBRD, nIntDiv);
-	write32 (ARM_UART0_FBRD, nFractDiv);
-	mmio_write(ARM_UART0_IFLS, 0x08);
-	mmio_write(ARM_UART0_LCRH, 0x70);
-	mmio_write(ARM_UART0_CR,   0xB01);
-	mmio_write(ARM_UART0_IMSC, 0x430);
-	*/
 
 	write32(ARM_UART0_IMSC, 0x00);
 	write32(ARM_UART0_ICR, 0x7ff);
@@ -182,13 +162,11 @@ boolean CBTUARTTransport::Initialize(unsigned nBaudrate)
 	write32(ARM_UART0_IMSC, INT_RX | INT_RT | INT_OE);
 
 	PeripheralExit();
-	CTimer::SimpleMsDelay(1000);
+
 	assert(m_pInterruptSystem != 0);
 	m_pInterruptSystem->ConnectIRQ(ARM_IRQ_UART, IRQStub, this);
 	m_bIRQConnected = TRUE;
 	CDeviceNameService::Get()->AddDevice("ttyBT1", this, FALSE);
-	CLogger::Get()->Write(FromBTUART, LogNotice, "BT Serial Device Created");
-	CLogger::Get()->Write(FromBTUART, LogNotice, "%s", CDeviceNameService::Get()->GetDevice("ttyBT1", FALSE) != 0 ? "Device Found" : "Device Not Found");
 	return TRUE;
 }
 
@@ -205,7 +183,6 @@ boolean CBTUARTTransport::SendHCICommand(const void *pBuffer, unsigned nLength)
 	{
 		Write(*pChar++);
 	}
-	// CLogger::Get ()->Write (FromBTUART, LogError, "Writing HCI command");
 	PeripheralExit();
 
 	return TRUE;
@@ -225,12 +202,10 @@ void CBTUARTTransport::Write(u8 nChar)
 		// do nothing
 	}
 	write32(ARM_UART0_DR, nChar);
-	//CLogger::Get()->Write(FromBTUART, LogNotice, "Writing 0x%02X", nChar);
 }
 
 void CBTUARTTransport::IRQHandler(void)
 {
-	//CLogger::Get()->Write(FromBTUART, LogNotice, "IRQ Trapped");
 	PeripheralEntry();
 	u32 nMIS = read32(ARM_UART0_MIS);
 	if (nMIS & INT_OE)
@@ -244,31 +219,26 @@ void CBTUARTTransport::IRQHandler(void)
 	{
 		if (read32(ARM_UART0_FR) & FR_RXFE_MASK)
 		{
-			//CLogger::Get()->Write(FromBTUART, LogNotice, "FIFO released");
 			break;
 		}
 		u8 nData = read32(ARM_UART0_DR) & 0xFF;
-		//CLogger::Get()->Write(FromBTUART, LogNotice, "UART DR 0x%02X", nData);
 
 		switch (m_nRxState)
 		{
 		case RxStateStart:
 			if (nData == HCI_PACKET_EVENT)
 			{
-				//CLogger::Get()->Write(FromBTUART, LogNotice, "IT IS HCI PACKET EVENT");
 				m_nRxInPtr = 0;
 				m_nRxState = RxStateCommand;
 			}
 			break;
 
 		case RxStateCommand:
-			//CLogger::Get()->Write(FromBTUART, LogNotice, "RxStateCommand: 0x%02X", nData);
 			m_RxBuffer[m_nRxInPtr++] = nData;
 			m_nRxState = RxStateLength;
 			break;
 
 		case RxStateLength:
-			//CLogger::Get()->Write(FromBTUART, LogNotice, "RxStateLength: 0x%02X", nData);
 			m_RxBuffer[m_nRxInPtr++] = nData;
 			if (nData > 0)
 			{
@@ -279,7 +249,6 @@ void CBTUARTTransport::IRQHandler(void)
 			{
 				if (m_pEventHandler != 0)
 				{
-					//CLogger::Get()->Write(FromBTUART, LogNotice, "Writing to EventHandler buffer");
 					(*m_pEventHandler)(m_RxBuffer, m_nRxInPtr);
 				}
 				m_nRxState = RxStateStart;
@@ -287,14 +256,12 @@ void CBTUARTTransport::IRQHandler(void)
 			break;
 
 		case RxStateParam:
-			//CLogger::Get()->Write(FromBTUART, LogNotice, "RxStateParam: 0x%02X", nData);
 			assert(m_nRxInPtr < BT_MAX_HCI_EVENT_SIZE);
 			m_RxBuffer[m_nRxInPtr++] = nData;
 			if (--m_nRxParamLength == 0)
 			{
 				if (m_pEventHandler != 0)
 				{
-					//CLogger::Get()->Write(FromBTUART, LogNotice, "Writing to EventHandler buffer");
 					(*m_pEventHandler)(m_RxBuffer, m_nRxInPtr);
 				}
 				m_nRxState = RxStateStart;

@@ -16,6 +16,3 @@ LIBS	= $(CIRCLEHOME)/lib/usb/libusb.a \
 include $(LIBBTHOME)/Rules.mk
 
 -include $(DEPS)
-
-BCM4345C0.o : BCM4345C0.hcd
-	aarch64-none-elf-objcopy -I binary -O elf64-littleaarch64 -B aarch64 $< $@

@@ -29,16 +29,13 @@ libbluetooth.a: $(OBJS)
 	rm -f $@
 	$(AR) cr $@ $(OBJS)
 
-EXTRACLEAN = BCM43430A1.h converttool
+# EXTRACLEAN = BCM43430A1.h converttool
 
 include $(LIBBTHOME)/Rules.mk
 
-%.h: %.hcd
-	./converttool -b $< > $@
-
-btdevicemanager.o: BCM43430A1.h
-
-BCM43430A1.h: converttool
-
-converttool: converttool.c
-	gcc -o converttool converttool.c
+# @babbleberry Adam Greenwood-Byrne
+# https://www.rpi4os.com/part7-bluetooth/
+# license CC0 1.0 Universal
+# FIX-ME objcopy for 32 bit?
+BCM4345C0.o : firmware/BCM4345C0.hcd
+	aarch64-none-elf-objcopy -I binary -O elf64-littleaarch64 -B aarch64 $< $@

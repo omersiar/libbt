@@ -89,7 +89,6 @@ void CBTQueue::Enqueue (const void *pBuffer, unsigned nLength, void *pParam)
 	memcpy (pEntry->Buffer, pBuffer, nLength);
 
 	pEntry->pParam = pParam;
-	//CLogger::Get ()->Write (FromBTQue, LogNotice, "Spinning lock acquire for enqued command");
 	m_SpinLock.Acquire ();
 
 	pEntry->pPrev = m_pLast;
@@ -106,7 +105,6 @@ void CBTQueue::Enqueue (const void *pBuffer, unsigned nLength, void *pParam)
 		m_pLast->pNext = pEntry;
 	}
 	m_pLast = pEntry;
-	//CLogger::Get ()->Write (FromBTQue, LogNotice, "command should be enqueued");
 	m_SpinLock.Release ();
 }
 

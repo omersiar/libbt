@@ -25,7 +25,7 @@
 #include <circle/logger.h>
 #include <assert.h>
 
-LOGMODULE ("BTSUB");
+LOGMODULE ("btsub");
 
 CBTSubSystem::CBTSubSystem (CInterruptSystem *pInterruptSystem, u32 nClassOfDevice, const char *pLocalName)
 :	m_pInterruptSystem (pInterruptSystem),
@@ -44,12 +44,11 @@ CBTSubSystem::~CBTSubSystem (void)
 boolean CBTSubSystem::Initialize (void)
 {
 	// if USB transport not available, UART still free and this is a RPi 3: use UART transport
-	LOGNOTE ("Initializing the Bluetooth subsystem");
+	// Board rev - bt chip uart info > https://github.com/bluekitchen/btstack/blob/master/port/raspi/README.md
 	if (   CDeviceNameService::Get ()->GetDevice ("ubt1", FALSE) == 0
 	    && CDeviceNameService::Get ()->GetDevice ("ttyS1", FALSE) == 0
 	    && CMachineInfo::Get ()->GetModelMajor () == 3)
 	{
-		LOGNOTE ("Initializing UART Transport");
 		assert (m_pUARTTransport == 0);
 		assert (m_pInterruptSystem != 0);
 		m_pUARTTransport = new CBTUARTTransport (m_pInterruptSystem);
@@ -74,17 +73,13 @@ boolean CBTSubSystem::Initialize (void)
 		return FALSE;
 	}
 
-	LOGNOTE ("BT Task is now going to be created");
 	new CBTTask (this);
-	LOGNOTE ("BT Task is created, waiting device to be running");
 
 	while (!m_HCILayer.GetDeviceManager ()->DeviceIsRunning ())
 	{
 		CScheduler::Get ()->Yield ();
-		//LOGNOTE ("Device State %d", m_HCILayer.GetDeviceManager ()->GetState ());
-		//CTimer::SimpleMsDelay (2000);
 	}
-	LOGNOTE ("BT device is now running");
+
 	return TRUE;
 	
 }
