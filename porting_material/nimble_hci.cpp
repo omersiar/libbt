@@ -34,7 +34,7 @@
 #include "../circle/bt/btuarttransport.h"
 #include "../circle/bt/bcmvendor.h"
 static CBTUARTTransport* m_pUARTTransport = nullptr;
-//#define DEBUG_LOG
+//#define DEBUG_LOG //SEB
 
 
 /* HCI packet types */
@@ -160,7 +160,7 @@ ble_hci_trans_hs_cmd_tx(uint8_t *cmd)
 	// https://iotbreaks.com/understand-bluetooth-hci-commands-and-events/
 	// see also hci_common.h
 	TBTHCICommandHeader* pHeader = (TBTHCICommandHeader*) buf;
-	#ifdef DEBUG_LOG
+	#ifdef DEBUG_LOG //SEB
 	logHex(BLE_HCI_OGF(pHeader->OpCode)); logString("."); logHex(BLE_HCI_OCF(pHeader->OpCode));
 	logString(" +"); logInteger(pHeader->ParameterTotalLength);
 	logString(" -> BT\r\n");
@@ -189,7 +189,7 @@ ble_hci_trans_hs_acl_tx(struct os_mbuf *om)
      */
     for (struct os_mbuf* m = om; m; m = SLIST_NEXT(m, om_next)) {
     	uint8_t* buf = m->om_data;
-		#ifdef DEBUG_LOG
+		#ifdef DEBUG_LOG //SEB
 		if (m==om) {
 			logString("ACL @"); logHex(buf[0]); logHex(buf[1]>>4);
 			uint16_t l = ((uint16_t*)buf)[1]; // see http://affon.narod.ru/BT/bluetooth_app_c10.pdf#G12.228239
@@ -257,7 +257,7 @@ hci_transport_send_evt_to_host(uint8_t *buf, uint8_t size)
 static void bluetooth_callback(const void* pBuffer, unsigned nLength) {
 	uint8_t* b = (uint8_t*) pBuffer;
 	if (m_pUARTTransport->isHciCommand) {
-		#ifdef DEBUG_LOG
+		#ifdef DEBUG_LOG //SEB
 		TBTHCIEventHeader* pHeader = (TBTHCIEventHeader*) pBuffer;
 		if (pHeader->EventCode==0xE) {
 			logString("E...");
@@ -272,7 +272,7 @@ static void bluetooth_callback(const void* pBuffer, unsigned nLength) {
 		hci_transport_send_evt_to_host(b,nLength);
 	}
 	else {
-		#ifdef DEBUG_LOG
+		#ifdef DEBUG_LOG //SEB
 		logString("ACL @"); logHex(b[0]); logHex(b[1]>>4);
 		logString(" +"); logInteger(((uint16_t*)pBuffer)[1]); logString(" ");
 		for (int i=4;i<nLength;i++) {logHex(b[i]); logString(",");}
@@ -288,7 +288,7 @@ static void helper_callback(const void* pBuffer, unsigned nLength) {
 	TBTHCIEventCommandComplete* pCommandComplete = (TBTHCIEventCommandComplete*) pBuffer;
 	if (pCommandComplete->Header.EventCode!=EVENT_CODE_COMMAND_COMPLETE) return;
 	ackedOpcode = pCommandComplete->CommandOpCode;
-	#ifdef DEBUG_LOG
+	#ifdef DEBUG_LOG //SEB
 	logHex(BLE_HCI_OGF(ackedOpcode)); logString("."); logHex(BLE_HCI_OCF(ackedOpcode));
 	logString(" ACK for firmware command\r\n");
 	#endif
