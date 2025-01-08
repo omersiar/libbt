@@ -30,6 +30,13 @@ In particular, LinkedList.h is not included here and is my self-baked implementa
 Also, the new versions of circle now have mutex/semaphores (I think), so you should use that instead.
 
 
+# Misc
+
+I also included my modifications to CBTUARTTransport. Please double- check with your versions. I seem to remember that I added some functionalities...
+
+Also, BCM43430A1.h is the required firmware for... raspi zero I think ?
+
+
 
 
 # Usage from circle
