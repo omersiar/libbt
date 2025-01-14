@@ -32,5 +32,6 @@
 *.app
 
 gcc*
-kernel*
+kernel.img
+kernel.elf
 .vscode/

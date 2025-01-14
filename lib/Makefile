@@ -22,23 +22,14 @@ LIBBTHOME = ..
 
 OBJS	= btsubsystem.o bttask.o \
 	  btlogicallayer.o btinquiryresults.o \
-	  bthcilayer.o btdevicemanager.o \
+	  bthcilayer.o BCM4345C0.o btdevicemanager.o \
 	  btqueue.o btuarttransport.o
+
+BCM4345C0.o : BCM4345C0.hcd
+	aarch64-none-elf-objcopy -I binary -O elf64-littleaarch64 -B aarch64 $< $@
 
 libbluetooth.a: $(OBJS)
 	rm -f $@
 	$(AR) cr $@ $(OBJS)
 
-EXTRACLEAN = BCM43430A1.h converttool
-
 include $(LIBBTHOME)/Rules.mk
-
-%.h: %.hcd
-	./converttool -b $< > $@
-
-btdevicemanager.o: BCM43430A1.h
-
-BCM43430A1.h: converttool
-
-converttool: converttool.c
-	gcc -o converttool converttool.c
